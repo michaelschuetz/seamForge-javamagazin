@@ -1,0 +1,343 @@
+Java EE Projekte am Fließband mit Seam Forge
+"From Zero to Java EE"
+
+WARUM??
+#######################
+Einstieg
+
+Wer kennt das nicht: ein neues Projekt mit spannender Fachlichkeit und Technologien wartet auf uns. Nicht selten können Euphorie und Motivation durch zunächst infrastrukturellen Maßnahmen: das technische Aufsetzen eines Projektes.
+
+Seam Forge ist angetreten, sowohl das initiale Setup als auch die projektbegleitende Konfiguration radikal zu vereinfachen.
+
+Auf einen Blick: Das kann Forge schon heute:
+ Create Java web applications from scratch in a matter of seconds.
+ Setup Java Persistence (JPA) for Hibernate, EclipseLink, and OpenJPA on JBoss AS 6, JBoss AS7 and GlassFish
+ Setup Java Server Faces (JSF)
+ Setup Contexts and Dependency Injection for Java (CDI)
+	
+ Create JPA @Entities in just a few commands, including adding new fields, relationships, and collections.
+ Generate barebones UI from @Entity classes for adding, removing, editing, and deleting rows from the database.
+ Manage project dependencies and repositories.
+
+
+Im Rahmen des Artikel soll anhand eines Beispiels in die grundlegende Funktionsweise von Seam Forge eingeführt werden. Neben Konzepten samt Beispielcode wird v.a. das mächtige Plugin-Konzept vorgestellt. Neben den Stärken werden auch die aktuellen Schwächen beleuchtet. Ein Ausblick rundet den Artikel ab.
+
+TODO: Gründe und Möglichkeiten, siehe Forge Website
+
+WAS??
+#######################
+
+TODO: 
+
+
+Von 0 zu Java EE in 5 Minuten.
+
+
+Installation und Vorbereitung
+
+    Seam Forge Version 1.0.0 Alpha 3 herunterladen und entpacken.
+    Seam-Forge Verzeichnis als FORGE_HOME den Systemvariablen hinzufügen und in der Konsole testen: forge
+    JBoss AS 6.0 Final herunterladen und entpacken.
+
+Projekterstellung
+
+    Seam-Forge in der Konsole starten mit: forge
+
+eine neues Projekt erstellen
+
+$ new-project --named testprojekt --topLevelPackage de.akquinet
+$ scaffold setup
+
+(Die Frage ob man das Packet zu einem WAR machen möchte, mit ja beantworten. Auch sollte die Installation der facet depends zugestimmt werden.)
+
+$ scaffold create-indexes --overwrite
+$ persistence setup --provider your [JPA implementation] --container [your container]
+
+Im TestProjekt folgendes verwenden:persistence setup --provider HIBERNATE --container JBOSS_AS6
+JPA Entities anlegen:
+
+$ new-entity --named Customer
+Customer.java $ new-field string --named firstName
+Customer.java $ new-field string --named lastName
+
+Die Entity kann mittels ls angezeigt werden.
+Gerüst für die Entity anlegen:
+
+Customer.java $ scaffold from-entity
+
+Anschliessend die Frage mit ja beantworten und die folgende Metawidget-Version aussuchen: org.metawidget:metawidget:1.10
+
+Danach die Seam Persistence Version auswählen. Für das Testprojekt ist das die: org.jboss.seam.persistence:seam-persistence:3.0.0.Final
+
+Es werden ein paar Dateien überschrieben, sodass in der nachfolgenden Frage mit Ja geantwortet werden kann.
+Bauen und Testen
+
+Das projekt kann über die Forge-Konsole wie mit Maven gebaut werden oder ganz normal nur mit Maven.
+
+Dann das WAR in den JBoss schieben und starten.
+
+Wenn JBOSS_HOME gesetzt kann es wie folgt gemacht werden:
+
+$ cd -
+$ mvn clean package
+$ mvn jboss:hard-deploy
+$ mvn jboss:start
+
+Testen kann man das Projekt nun über die folgende Links:  
+http://localhost:8080/testprojekt-1.0.0-SNAPSHOT/faces/index.xhtml
+http://localhost:8080/testprojekt-1.0.0-SNAPSHOT/faces/scaffold/customer/view.xhtml
+
+
+    #####
+
+    You may inspect the entity using 'ls'.
+
+    Customer.java $ ls
+
+    [fields]
+    private::String::firstName;       private::String::lastName;
+    private::int::version;               private::long::id;
+
+    [methods]
+    public::getFirstName()::String                                               public::getId()::long
+    public::getLastName()::String                                                public::getVersion()::int
+    public::setFirstName(final String firstName)::void                    public::setId(final long id)::void
+    public::setLastName(final String lastName)::void                     public::setVersion(final int version)::void
+    public::toString()::String
+
+    Customer.java $
+
+    Once you have created fields in the entity, it's time to generate some scaffolding. For now, use the Forge default scaffold; you'll also need to confirm installation of a few libraries/dependencies.
+
+    Customer.java $ scaffold from-entity
+
+    ? No scaffold type was selected, use default (Metawidget & JSF)? [Y/n]
+    Wrote /src/main/java/com/scaffold/domain/Customer.java
+    Wrote /src/main/java/com/scaffold/view/CustomerBean.java
+    Wrote /src/main/webapp/scaffold/customer/view.xhtml
+    Wrote /src/main/webapp/scaffold/customer/create.xhtml
+    Wrote /src/main/webapp/scaffold/customer/list.xhtml
+    ***SUCCESS*** Generated UI for [com.scaffold.domain.Customer]
+
+    Customer.java $
+
+    That's it! Now build your project and deploy it onto your JBoss Application Server instance:
+
+$ build
+
+Or, if you want to control the build more finely, you can also build your new project using Maven. (If you do not have maven installed, Forge will use its provided embedded Maven support.)
+
+$ mvn clean package
+
+If you have set your $JBOSS_HOME environment variable to the location of your JBoss AS server installation folder, your project can correspondingly be deployed and undeployed using:
+
+//deploy
+$ mvn jboss:hard-deploy
+$ mvn jboss:start
+
+// undeploy
+$ mvn jboss:hard-undeploy
+$ mvn jboss:stop
+
+That's it! Access your deployed application at:
+
+http://localhost:8080/{projectname}
+
+Access your scaffolded entities at:
+
+http://localhost:8080/{projectname}/faces/scaffold/{lowercase-entity}/view.xhtml
+
+
+
+
+
+
+
+Code-Beispiel erklären. Die 5 minimalen schritte für Java EE 6 Seam3 Anwendung auflisten und erklären.
+
+http://localhost:8080/{projectname}/faces/scaffold/ {entity}/view.xhtml
+Läuft im Jboss AS 6 Final.
+Download Beispiel Sourcen hier.
+
+TODO: Hinweis für AS7: metawidget als provided.
+http://localhost:9999/console/
+http://localhost:8080/forge-as7/faces/scaffold/room/view.xhtml
+
+here is a workaround (see pom.xml), due to current AS7 issue with classloading:
+* https://issues.jboss.org/browse/SEAMFORGE-156
+* https://issues.jboss.org/browse/AS7-708
+
+
+Konzepte:
+* Plugin
+* Facet
+* Commands
+* Options
+
+Beispielcode:
+https://github.com/michaelschuetz/forge-log-plugin/blob/v1.4/src/main/java/com/acme/plugin/LogPlugin.java
+https://github.com/michaelschuetz/seam-forge-sandbox
+https://github.com/pschaerf/plugin-example
+https://issues.jboss.org/browse/SEAMFORGE-196
+https://github.com/forge/plugin-hibernate-tools/blob/master/src/main/java/org/hibernate/forge/plugin/GenerateEntities.java
+
+
+https://docs.jboss.org/author/display/SEAMFORGE/First+steps+with+Scaffolding
+
+
+
+WIE??
+#######################
+
+* Forge-API ist die reine API
+
+ Die eigentliche Möächtigkeit ist im Plugin-Konzept versteckt.
+ Plugins können in der lokalen Forge-Installation eingelesen und direkt verwendet werden. Am elegantesten ist wohl der direkte Weg über Git Repositories. So können leicht, bestehende Plugins integriert werden, bei Bedarf auch entsprechend getaggt.
+ Ähnlich kompfortabel ist es, eigene Plugins zu erstellen. Gesagt getan.
+
+forge git-plugin git://github.com/michaelschuetz/forge-log-plugin.git 
+
+forge git-plugin git://github.com/forge/plugin-hibernate-tools.git
+
+
+WOHIN NOCH???
+#######################
+
+Beschränkungen:
+* Dokumentation unzuriechend
+* Java-Plugin nicht ausgereift
+* gleiches gilt für Persistence plugin
+* Nach Code-Generation ist Formatierung hinüber
+* Felder werden am Ende einegeführt und nicht lt. Java Coventionen (?) zu Beginn
+
+Noch Alpha
+
+1.0.0.Alpha4 "Birthday" Released 
+http://seamframework.org/Documentation/SeamForge
+
+Reference: https://docs.jboss.org/author/display/SEAMFORGE/Reference+Guide
+Videos: http://vimeo.com/channels/seamforge
+Sourcen: https://github.com/forge
+Links auf einen Blick als Box?
+
+
+https://www.spree.de/confluence/display/KnowHow/Seam+Forge
+
+Planung
+
+http://seamframework.org/Documentation/SeamForge
+
+Beta im September
+
+Wer verwendet das?
+
+Link-BOX
+#############
+* Projekt Dokumentation: https://docs.jboss.org/author/display/SEAMFORGE
+
+
+BRAINSTORM
+############
+
+"
+How many times have you wanted to start a new project in Java EE, but struggled to put all the pieces together?
+Has the Maven archetype syntax left you scratching your head? Everyone else is talking about cool new tools in other languages or frameworks, and you're left thinking, "I wish it were that easy for me." Well, there's good news: You don't have to leave Java EE just to find a developer tool that makes starting out simple. JBoss Forge is heating up Java EE, and is ready to work it into a full-fledged project.
+In addition to being a rapid-application generation tool, Forge is also an incremental enhancement tool that lets you to take an existing Java EE projects and safely work-in new functionality. Forge comprehends your entire project, including the abstract structure of the files, and can make intelligent decisions of how and what to change.
+Whether you want to get your startup going today, or make your big customers happy tomorrow, Forge is a tool you should be looking at.
+"
+
+Was seam-gen für Seam2 war und Spring für Roo ist, ist Seam Forge für Java EE Anwendungen: eine Möglichkeit, schnell Projektstrukturen zu erzeugen und Konfigurationen zu automatisieren.
+
+
+
+
+
+Mini-Interview mit Lincoln Baxter? als eigene Box??
+
+
+How many times have you wanted to start a new project in Java EE, but struggled to put all the pieces together? Has the Maven archetype syntax left you scratching your head? Everyone else is talking about cool new tools in other languages or frameworks, and you're left thinking, "I wish it were that easy for me." Well, there's good news: You don't have to leave Java EE just to find a developer tool that makes starting out simple. Seam Forge is heating up Java EE, and is ready to work it into a full-fledged project.
+In addition to being a rapid-application generation tool, Forge is also an incremental enhancement tool that lets you to take an existing Java EE projects and safely work-in new functionality. Forge comprehends your entire project, including the abstract structure of the files, and can make intelligent decisions of how and what to change.
+Whether you want to get your startup off the ground today, or make your big customers happy tomorrow, Forge is a tool you should be looking at.
+
+
+
+
+ 
+
+But more than all this, which is really just scratching the surface of what's possible already, Forge is an extendable platform for Plugin development. It's more than just a tool for creating Java or Java EE applications, and in fact has been designed to be technology agnostic; Forge is not limited to Java EE. Plugins can be written for any variety of technologies. 
+
+####
+
+TODO: AS7-Beispiel
+
+#####
+
+Marek Kritik:
+
+                                                                     
+                                                                     
+                                                                     
+                                             
+
+- sehr interessant: Seam Forge setzt stark auf Metawidged
+
+- Navigation durch Verzeichnisse per "cd" sehr mühselig 
+  - Autovervollständigung funktioniert nicht richtig
+  - wenn man die Verzeichnisstruktur nicht kennt muss man einzeln / schrittweise navigieren   :-(
+
+- einige Befehle funktionieren nicht auf Anhieb, da sehr unintuitiv: 
+   Bsp: java new-class ...
+ 
+- "$ scaffold from-entity" 
+  -> generiert die toString-Methode. Wenn nun anschließend neue Properties hinzugefügt werden, so wird die toString-Methode nicht entsprechend erweitert
+  -> die toString-Methode muss dann erst händisch im Editor gelöscht werden
+
+- Generierter Code von Enttites ist unschön. Properties stehen immer bei Gettern & Settern  =>  Properties sind im Code verteilt
+
+- "$ scaffold from-entity" könnte eigentlich auch gleich equals und hashCode mitgenerieren
+
+- Erstellung von "custom" Properties.
+  z.B.: >Person.java $ new-field --named dateOfBirth custom java.util.Date
+  unschön hier: 
+  - keine Autovervollständigung bei der Typangabe (auch nicht bei Standardtypen)
+  - besonders Blöd im Fehlerfall
+    z.B.: >Person.java $ new-field --named dateOfBirth custom java.uti.Date  // hier fehlt bei "util" das "l"
+	-> in diesem Fall wird die Property generiert, der Code kompliliert jedoch nicht
+	=> noch blöder!!!!: nachträgliche Änderungen / Korrekturen sind nicht möglich; auch das Überschreiben mit dem korrekten Typ der Property ist nicht möglich
+	=> noch blöder!!!!!!!!: Problem nun ist, dass nach der manuellen Korrektur der Fehler erneut 
+	   -> man muss forge erst beenden und danach neu starten, dann wird die Klasse neu eingelesen und der Fehler ist behoben
+	
+- Entfernen von Properties geht nicht in der Konsole
+  -> Code muss im Editor angepasst werden
+    => dann muss forge jedoch neu gestartet werden
+
+- Bei Entities:
+  - Basics wie length, nullable und unique nicht definierbar -> erst im Nachhinein im Editor
+  - man kann keine Konverter einbinden
+  - auch kein Standardkonverter, z.B. bei Date -> die UI wirft einen Fehler bei Date-Eingaben
+	
+- Erstellung von Beans (View-Controllern) funktioniert gar nicht. Die Befehle hierfür lassen sich ausführen und täuschen Erfolg vor, jedoch wird eine leere Klasse erstellt
+	
+- Erstellung einfacher Java-Klasse ist CRAP!!!
+  Bsp.: $ java new-class --package de.mi.samples.forge.util public class MyClass{}
+  What the fuck!! Was soll der Scheiß!?!?!? Progemmieren in der Kommandozeile - klar, wozu brauchen wir IDEs wie Eclipse oder IDEA!?!?!?
+
+- Erstellen von Konstanten in Java-Klassen funktioniert nicht; naja, zum Teil schon. Feld kann erstellt werden, jedoch ohne Initialisierung -> Compiler-Fehler
+- Erstellen von Fields/Properties in Java-Klassen:
+  - Angabe von Default-Werten nicht möglich
+  - Typ der Property muss immer fully-qualified angegeben werden
+- Erstellen von Enumerations nicht möglich
+  Fazit: nutzlos!!!
+  
+- Dokumentation weicht noch an einigen Stellen ab
+
+- noch sehr schwache Doku
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+// Was dennoch schön ist
+- bei Abbildungen von Objektbeziehungen (OneToOne, ...) kann die Beziehung sowohl uni- als auch bidirektional gestaltet werden  --> schön :-)
+  ABER: bei bidirektionalen Beziehungen erfolgt im generierten Code keine Sicherstellung der referentiellen Integrität
+
+
+	
+	
